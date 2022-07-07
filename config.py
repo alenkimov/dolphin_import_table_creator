@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 class Config:
-    def __init__(self, refresh_proxies=True, refresh_proxy_type=True, refresh_cookies=True):
+    def __init__(self,refresh_cookies=True, refresh_proxies=True, refresh_proxy_type=True):
         self.proxies_path = None
         self.cookies_path = None
         self.first_row = None
@@ -23,7 +23,7 @@ class Config:
         if refresh_proxies:
             self.refresh_proxies_path()
 
-        if self.proxies_path and refresh_proxy_type:
+        if refresh_proxy_type:
             self.refresh_proxy_type()
 
     def load_proxies_path_from_config_json(self) -> bool:
@@ -58,6 +58,18 @@ class Config:
         else:
             print(f'Папка с cookie по пути \"{data["cookies_path"]}\" не найдена!')
             self.change_cookies_path(None)
+            return False
+
+    def load_proxy_type_from_config_json(self) -> bool:
+        with open("config.json", "r") as file:
+            data = json.load(file)
+
+        if data["proxy_type"] in self.proxy_types:
+            self.proxy_type = data["proxy_type"]
+            return True
+        else:
+            print("Неверный тип прокси!")
+            self.change_cookies_path("http")
             return False
 
     def load_rows_from_config_json(self):
@@ -97,9 +109,31 @@ class Config:
             print("Файл не найден!")
             return False
 
+    def change_proxy_type(self, new_proxy_type) -> bool:
+        if new_proxy_type in (None, self.proxy_type):
+            return True
+        elif new_proxy_type in self.proxy_types:
+            with open("config.json", "r") as file:
+                data = json.load(file)
+            data["proxy_type"] = new_proxy_type
+            with open("config.json", "w") as file:
+                json.dump(data, file, indent=4)
+            self.load_proxy_type_from_config_json()
+            return True
+        else:
+            print("Неверный тип прокси!")
+            return False
+
     def get_proxies(self) -> tuple:
         with open(self.proxies_path, "r") as file:
             return tuple(proxy.strip() for proxy in file.readlines())
+
+    def get_cookies(self) -> list:
+        cookies = list()
+        for filename in listdir(self.cookies_path):
+            with open(path.join(self.cookies_path, filename), 'r') as file:
+                cookies.append(file.read())
+        return cookies
 
     def print_proxies_from_proxies_file(self, length=5):
         """
@@ -109,7 +143,7 @@ class Config:
         """
         proxies = self.get_proxies()
         if proxies:
-            print("Содержание следующее:")
+            print(f"Найдено {len(proxies)} прокси:")
             if len(proxies) > length:
                 for i in range(length):
                     print(proxies[i])
@@ -120,19 +154,9 @@ class Config:
         else:
             print("Указанный файл с прокси пустой!")
 
-    def refresh_proxy_type(self):
-        print(f"Установлен тип прокси {self.proxy_type}")
-        print("Он будет установлен для каждого прокси")
-        print(f"Введите тип прикси для изменения {self.proxy_types} или оставьте ввод пустым, чтобы продолжить")
-        while True:
-            new_proxy_type = input(">> ")
-            if new_proxy_type in self.proxy_types:
-                self.proxy_type = new_proxy_type
-                break
-            elif new_proxy_type == '':
-                break
-            else:
-                print("Неверный тип прокси!")
+    def print_number_of_cookie_files(self):
+        folder = Path(self.cookies_path)
+        print(f"В папке \"{self.cookies_path}\" содержиться {len(list(folder.iterdir()))} файлов")
 
     def refresh_proxies_path(self):
         if self.proxies_path:
@@ -158,10 +182,6 @@ class Config:
                     if bool_question():
                         break
 
-    def print_number_of_cookie_files(self):
-        folder = Path(self.cookies_path)
-        print(f"В папке \"{self.cookies_path}\" содержиться {len(list(folder.iterdir()))} файлов")
-
     def refresh_cookies_path(self):
         if self.cookies_path:
             self.print_number_of_cookie_files()
@@ -178,9 +198,12 @@ class Config:
                 if bool_question():
                     break
 
-    def get_cookies(self) -> list:
-        cookies = list()
-        for filename in listdir(self.cookies_path):
-            with open(path.join(self.cookies_path, filename), 'r') as file:
-                cookies.append(file.read())
-        return cookies
+    def refresh_proxy_type(self):
+        print(f"Установлен тип прокси \"{self.proxy_type}\"")
+        print(f"Введите тип прокси для изменения {self.proxy_types} или оставьте ввод пустым, чтобы продолжить")
+        while True:
+            new_proxy_type = input(">> ")
+            if not new_proxy_type: new_proxy_type = None
+            if self.change_proxy_type(new_proxy_type):
+                print(f"Установлен тип прокси \"{self.proxy_type}\"")
+                break

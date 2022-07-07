@@ -1,6 +1,6 @@
 {
-    "proxies_path": null,
-    "cookies_path": null,
+    "proxies_path": "proxies.txt",
+    "cookies_path": "cookies",
     "proxy_type": "http",
     "first_row": [
         "Profile name",

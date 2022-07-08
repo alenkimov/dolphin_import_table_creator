@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 class Config:
-    def __init__(self,refresh_cookies=True, refresh_proxies=True, refresh_proxy_type=True):
+    def __init__(self,refresh_cookies=True, refresh_proxies=True):
         self.proxies_path = None
         self.cookies_path = None
         self.first_row = None
@@ -22,9 +22,6 @@ class Config:
 
         if refresh_proxies:
             self.refresh_proxies_path()
-
-        if refresh_proxy_type:
-            self.refresh_proxy_type()
 
     def load_proxies_path_from_config_json(self) -> bool:
         """
@@ -125,8 +122,11 @@ class Config:
             return False
 
     def get_proxies(self) -> tuple:
-        with open(self.proxies_path, "r") as file:
-            return tuple(proxy.strip() for proxy in file.readlines())
+        if self.proxies_path:
+            with open(self.proxies_path, "r") as file:
+                return tuple(proxy.strip() for proxy in file.readlines())
+        else:
+            return tuple()
 
     def get_cookies(self) -> list:
         cookies = list()
@@ -180,6 +180,7 @@ class Config:
                     self.print_proxies_from_proxies_file()
                     print("Продолжить (Y) или указать другой путь (N)?")
                     if bool_question():
+                        self.refresh_proxy_type()
                         break
 
     def refresh_cookies_path(self):

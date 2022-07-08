@@ -154,9 +154,20 @@ class Config:
         else:
             print("Указанный файл с прокси пустой!")
 
-    def print_number_of_cookie_files(self):
+    def print_cookie_files(self, length=5):
         folder = Path(self.cookies_path)
-        print(f"В папке \"{self.cookies_path}\" содержиться {len(list(folder.iterdir()))} файлов")
+        file_names = list(folder.iterdir())
+        if file_names:
+            print(f"В папке \"{self.cookies_path}\" содержиться {len(file_names)} файлов:")
+            if len(file_names) > length:
+                for i in range(length):
+                    print(file_names[i])
+                print("...")
+            else:
+                for name in file_names:
+                    print(name)
+        else:
+            print("Указанная папка пуста!")
 
     def refresh_proxies_path(self):
         if self.proxies_path:
@@ -185,7 +196,7 @@ class Config:
 
     def refresh_cookies_path(self):
         if self.cookies_path:
-            self.print_number_of_cookie_files()
+            self.print_cookie_files()
             print("Хотите использовать эту папку (Y) или хотите указать другой путь (N)?")
             if bool_question():
                 return
@@ -194,7 +205,7 @@ class Config:
             print("Укажите путь до файла (например: \"cookies\")")
             new_cookies_path = input(">> ")
             if self.change_cookies_path(new_cookies_path):
-                self.print_number_of_cookie_files()
+                self.print_cookie_files()
                 print("Продолжить (Y) или указать другой путь (N)?")
                 if bool_question():
                     break

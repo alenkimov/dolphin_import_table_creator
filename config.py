@@ -2,6 +2,7 @@ from utils import bool_question
 import json
 from os import path, listdir
 from pathlib import Path
+from os.path import getctime, getmtime
 
 
 class Config:
@@ -114,17 +115,24 @@ class Config:
         else:
             return tuple()
 
+    def get_sorted_cookie_paths(self) -> list:
+        folder = Path(self.cookies_path)
+        paths = list(folder.iterdir())
+        paths.sort(key=getmtime)
+        return paths
+
     def get_cookies(self) -> list:
         cookies = list()
-        for filename in listdir(self.cookies_path):
-            with open(path.join(self.cookies_path, filename), 'r') as file:
+        cookie_paths = self.get_sorted_cookie_paths()
+        for path in cookie_paths:
+            with open(path, 'r') as file:
                 cookies.append(file.read())
         return cookies
 
     def get_profile_names(self) -> list:
         profile_names = list()
 
-        file_names = listdir(self.cookies_path)
+        file_names = [path.name for path in self.get_sorted_cookie_paths()]
         for file_name in file_names:
             profile_names.append(str(file_name).replace("dolphin-anty-cookies-", "").replace(".txt", ""))
 
@@ -145,16 +153,15 @@ class Config:
             print("Указанный файл с прокси пустой!")
 
     def print_cookie_files(self, length=5):
-        folder = Path(self.cookies_path)
-        file_names = list(folder.iterdir())
-        if file_names:
-            print(f"В папке \"{self.cookies_path}\" содержиться {len(file_names)} файлов:")
-            if len(file_names) > length:
+        cookie_paths = self.get_sorted_cookie_paths()
+        if cookie_paths:
+            print(f"В папке \"{self.cookies_path}\" содержиться {len(cookie_paths)} файлов:")
+            if len(cookie_paths) > length:
                 for i in range(length):
-                    print(file_names[i].name)
+                    print(cookie_paths[i].name)
                 print("...")
             else:
-                for file_name in file_names:
+                for file_name in cookie_paths:
                     print(file_name.name)
         else:
             print("Указанная папка пуста!")

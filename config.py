@@ -121,6 +121,15 @@ class Config:
                 cookies.append(file.read())
         return cookies
 
+    def get_profile_names(self) -> list:
+        profile_names = list()
+
+        file_names = listdir(self.cookies_path)
+        for file_name in file_names:
+            profile_names.append(str(file_name).replace("dolphin-anty-cookies-", "").replace(".txt", ""))
+
+        return profile_names
+
     def print_proxies_from_proxies_file(self, length=5):
         proxies = self.get_proxies()
         if proxies:
@@ -142,11 +151,11 @@ class Config:
             print(f"В папке \"{self.cookies_path}\" содержиться {len(file_names)} файлов:")
             if len(file_names) > length:
                 for i in range(length):
-                    print(file_names[i])
+                    print(file_names[i].name)
                 print("...")
             else:
-                for name in file_names:
-                    print(name)
+                for file_name in file_names:
+                    print(file_name.name)
         else:
             print("Указанная папка пуста!")
 

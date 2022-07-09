@@ -14,6 +14,7 @@ def main():
     sheet.append(config.first_row)
     sheet.append(config.second_row)
 
+    profile_names = config.get_profile_names()
     cookies = config.get_cookies()
     proxies = config.get_proxies()
     proxy_type = config.proxy_type
@@ -22,14 +23,14 @@ def main():
     if proxies:
         number_of_proxies = len(proxies)
 
-    for i in range(len(cookies)):
-        data = [i + 1, cookies[i]]
+    for i in range(len(profile_names)):
+        data = [profile_names[i], cookies[i]]
         if i < number_of_proxies:
             data.append(proxy_type)
             data.append(proxies[i])
 
         sheet.append(data)
-        preview_data = [i + 1, str(cookies[i])[:15]]
+        preview_data = [profile_names[i], str(cookies[i])[:15]]
         if i < number_of_proxies:
             preview_data.append(proxy_type)
             preview_data.append(proxies[i].split(':', 1)[0])

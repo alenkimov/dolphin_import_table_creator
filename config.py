@@ -24,11 +24,6 @@ class Config:
             self.refresh_proxies_path()
 
     def load_proxies_path_from_config_json(self) -> bool:
-        """
-        Запоминаем путь к прокси из файла
-        Если путь неверный, меняем на None (null) и возвращаем False
-        :return:
-        """
         with open("config.json", "r") as file:
             data = json.load(file)
 
@@ -41,11 +36,6 @@ class Config:
             return False
 
     def load_cookies_path_from_config_json(self) -> bool:
-        """
-        Запоминаем путь к cookie
-        Если путь неверный, меняем на None (null) и возвращаем False
-        :return:
-        """
         with open("config.json", "r") as file:
             data = json.load(file)
 
@@ -70,10 +60,6 @@ class Config:
             return False
 
     def load_rows_from_config_json(self):
-        """
-        Запоминаем значения таблицы из файла
-        :return:
-        """
         with open("config.json", "r") as file:
             data = json.load(file)
 
@@ -136,11 +122,6 @@ class Config:
         return cookies
 
     def print_proxies_from_proxies_file(self, length=5):
-        """
-        # Выводит первые строки из файла с прокси
-        :param length: указывает, сколько строк выводить в печать. По умолчанию до пяти строк
-        :return:
-        """
         proxies = self.get_proxies()
         if proxies:
             print(f"Найдено {len(proxies)} прокси:")

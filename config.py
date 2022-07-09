@@ -14,6 +14,12 @@ class Config:
         self.proxy_type = "http"
         self.proxy_types = ("http", "https", "socks5", "ssh")
 
+        self.sorting_type = "ctime"
+        # Не используется сейчас
+        # Нужно предоставлять пользователю выбор между одной из сортировок
+        self.sorting_types = ("ctime", "mtime", "name")
+        self.reversed_sorting = False
+
         self.load_proxies_path_from_config_json()
         self.load_cookies_path_from_config_json()
         self.load_rows_from_config_json()
@@ -115,15 +121,35 @@ class Config:
         else:
             return tuple()
 
-    def get_sorted_cookie_paths(self) -> list:
+    def get_sorted_by_ctime_cookie_paths(self, reverse=False) -> list:
         folder = Path(self.cookies_path)
         paths = list(folder.iterdir())
-        paths.sort(key=getmtime)
+        paths.sort(key=getctime, reverse=reverse)
         return paths
+
+    def get_sorted_by_mtime_cookie_paths(self, reverse=False) -> list:
+        folder = Path(self.cookies_path)
+        paths = list(folder.iterdir())
+        paths.sort(key=getmtime, reverse=reverse)
+        return paths
+
+    def get_sorted_by_name_cookie_paths(self, reverse=False) -> list:
+        folder = Path(self.cookies_path)
+        paths = list(folder.iterdir())
+        paths.sort(reverse=reverse)
+        return paths
+
+    def get_sorted_cookie_paths(self, sorting_type, reverse=False):
+        if sorting_type == "ctime":
+            return self.get_sorted_by_ctime_cookie_paths(reverse)
+        elif sorting_type == "mtime":
+            return self.get_sorted_by_mtime_cookie_paths(reverse)
+        elif sorting_type == "name":
+            return self.get_sorted_by_mtime_cookie_paths(reverse)
 
     def get_cookies(self) -> list:
         cookies = list()
-        cookie_paths = self.get_sorted_cookie_paths()
+        cookie_paths = self.get_sorted_cookie_paths(self.sorting_type, self.reversed_sorting)
         for path in cookie_paths:
             with open(path, 'r') as file:
                 cookies.append(file.read())
@@ -132,7 +158,7 @@ class Config:
     def get_profile_names(self) -> list:
         profile_names = list()
 
-        file_names = [path.name for path in self.get_sorted_cookie_paths()]
+        file_names = [path.name for path in self.get_sorted_cookie_paths(self.sorting_type, self.reversed_sorting)]
         for file_name in file_names:
             profile_names.append(str(file_name).replace("dolphin-anty-cookies-", "").replace(".txt", ""))
 
@@ -153,7 +179,7 @@ class Config:
             print("Указанный файл с прокси пустой!")
 
     def print_cookie_files(self, length=5):
-        cookie_paths = self.get_sorted_cookie_paths()
+        cookie_paths = self.get_sorted_cookie_paths(self.sorting_type, self.reversed_sorting)
         if cookie_paths:
             print(f"В папке \"{self.cookies_path}\" содержиться {len(cookie_paths)} файлов:")
             if len(cookie_paths) > length:
@@ -170,7 +196,7 @@ class Config:
         if self.proxies_path:
             print(f"Ранее был указан файл по пути \"{self.proxies_path}\"")
             self.print_proxies_from_proxies_file()
-            print("Хотите использовать этот файл (Y) или хотите указать новый файл / не использовать прокси вовсе (N)?")
+            print("Хотите использовать этот файл (Y)? Или хотите указать новый файл / изменить тип прокси / не использовать прокси вовсе (N)?")
             if bool_question():
                 return
 

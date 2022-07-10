@@ -1,5 +1,5 @@
 # Dolphin import table creator
--> [Скрипт создания таблицы массового импорта для Dolphin Anty](https://teletype.in/@alenkimov/dolphin_import_table_creator)
+-> [Статья на teletype](https://teletype.in/@alenkimov/dolphin_import_table_creator)
 
 В первую очередь нам нужно [скачать](https://www.python.org/downloads/) и установить Python.
 

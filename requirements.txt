@@ -1,0 +1,2 @@
+prettytable==3.3.0
+openpyxl==3.0.10

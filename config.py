@@ -18,11 +18,15 @@ class Config:
         # Не используется сейчас
         # Нужно предоставлять пользователю выбор между одной из сортировок
         self.sorting_types = ("ctime", "mtime", "name")
+        self.sorting_descriptions = {"ctime": "Сортировка по дате создания файла cookie",
+                                     "mtime": "Сортировка по дате изменения файла cookie",
+                                     "name": "Сортировка по имени файла cookie"}
         self.reversed_sorting = False
 
         self.load_proxies_path_from_config_json()
         self.load_cookies_path_from_config_json()
         self.load_rows_from_config_json()
+        self.load_sorting_type_from_config_json()
 
         if refresh_cookies:
             self.refresh_cookies_path()
@@ -63,7 +67,7 @@ class Config:
             return True
         else:
             print("Неверный тип прокси!")
-            self.change_cookies_path("http")
+            self.change_proxy_type("http")
             return False
 
     def load_rows_from_config_json(self):
@@ -72,6 +76,18 @@ class Config:
 
         self.first_row = data["first_row"]
         self.second_row = data["second_row"]
+
+    def load_sorting_type_from_config_json(self):
+        with open("config.json", "r") as file:
+            data = json.load(file)
+
+        if data["sorting_type"] in self.sorting_types:
+            self.sorting_type = data["sorting_type"]
+            return True
+        else:
+            print("Неверный тип сортировки!")
+            self.change_sorting_type("ctime")
+            return False
 
     def change_proxies_path(self, new_proxies_path) -> bool:
         if new_proxies_path is None or path.exists(new_proxies_path):
@@ -139,13 +155,19 @@ class Config:
         paths.sort(reverse=reverse)
         return paths
 
+    # def get_sorted_by_number_cookie_paths(self, reverse=False) -> list:
+    #     folder = Path(self.cookies_path)
+    #     paths = list(folder.iterdir())
+    #     paths.sort(reverse=reverse)
+    #     return paths
+
     def get_sorted_cookie_paths(self, sorting_type, reverse=False):
         if sorting_type == "ctime":
             return self.get_sorted_by_ctime_cookie_paths(reverse)
         elif sorting_type == "mtime":
             return self.get_sorted_by_mtime_cookie_paths(reverse)
         elif sorting_type == "name":
-            return self.get_sorted_by_mtime_cookie_paths(reverse)
+            return self.get_sorted_by_name_cookie_paths(reverse)
 
     def get_cookies(self) -> list:
         cookies = list()
@@ -186,9 +208,11 @@ class Config:
                 for i in range(length):
                     print(cookie_paths[i].name)
                 print("...")
+                print(self.sorting_descriptions[self.sorting_type])
             else:
                 for file_name in cookie_paths:
                     print(file_name.name)
+                print(self.sorting_descriptions[self.sorting_type])
         else:
             print("Указанная папка пуста!")
 
@@ -242,3 +266,18 @@ class Config:
             if self.change_proxy_type(new_proxy_type):
                 print(f"Установлен тип прокси \"{self.proxy_type}\"")
                 break
+
+    def change_sorting_type(self, new_sorting_type) -> bool:
+        if new_sorting_type in (None, self.proxy_type):
+            return True
+        elif new_sorting_type in self.sorting_types:
+            with open("config.json", "r") as file:
+                data = json.load(file)
+            data["sorting_type"] = new_sorting_type
+            with open("config.json", "w") as file:
+                json.dump(data, file, indent=4)
+            self.load_sorting_type_from_config_json()
+            return True
+        else:
+            print("Неверный тип сортировки!")
+            return False

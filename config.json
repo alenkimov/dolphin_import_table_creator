@@ -2,6 +2,7 @@
     "proxies_path": null,
     "cookies_path": null,
     "proxy_type": "http",
+    "sorting_type": "ctime",
     "first_row": [
         "Profile name",
         "Cookie",

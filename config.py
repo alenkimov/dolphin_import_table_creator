@@ -17,10 +17,11 @@ class Config:
         self.sorting_type = "ctime"
         # Не используется сейчас
         # Нужно предоставлять пользователю выбор между одной из сортировок
-        self.sorting_types = ("ctime", "mtime", "name")
+        self.sorting_types = ("ctime", "mtime", "name", "num")
         self.sorting_descriptions = {"ctime": "Сортировка по дате создания файла cookie",
                                      "mtime": "Сортировка по дате изменения файла cookie",
-                                     "name": "Сортировка по имени файла cookie"}
+                                     "name": "Сортировка по имени файла cookie",
+                                     "num": "Сортировка по имени файла cookie, если имя профиля представляет число"}
         self.reversed_sorting = False
 
         self.load_proxies_path_from_config_json()
@@ -155,11 +156,15 @@ class Config:
         paths.sort(reverse=reverse)
         return paths
 
-    # def get_sorted_by_number_cookie_paths(self, reverse=False) -> list:
-    #     folder = Path(self.cookies_path)
-    #     paths = list(folder.iterdir())
-    #     paths.sort(reverse=reverse)
-    #     return paths
+    @staticmethod
+    def num_sorting(path):
+        return int(str(path.name).replace("dolphin-anty-cookies-", "").replace(".txt", ""))
+
+    def get_sorted_by_number_cookie_paths(self, reverse=False) -> list:
+        folder = Path(self.cookies_path)
+        paths = list(folder.iterdir())
+        paths.sort(reverse=reverse, key=self.num_sorting)
+        return paths
 
     def get_sorted_cookie_paths(self, sorting_type, reverse=False):
         if sorting_type == "ctime":
@@ -168,6 +173,13 @@ class Config:
             return self.get_sorted_by_mtime_cookie_paths(reverse)
         elif sorting_type == "name":
             return self.get_sorted_by_name_cookie_paths(reverse)
+        elif sorting_type == "num":
+            try:
+                return self.get_sorted_by_number_cookie_paths(reverse)
+            except:
+                print("Невозможно отсортировать по номеру профиля: в названии профилей содержаться буквы")
+                self.change_sorting_type("name")
+                return self.get_sorted_cookie_paths(self.sorting_type, reverse)
 
     def get_cookies(self) -> list:
         cookies = list()
@@ -209,6 +221,7 @@ class Config:
                     print(cookie_paths[i].name)
                 print("...")
                 print(self.sorting_descriptions[self.sorting_type])
+                print("Тип сортировки можно будет изменить потом")
             else:
                 for file_name in cookie_paths:
                     print(file_name.name)

@@ -6,34 +6,43 @@ from os.path import getctime, getmtime
 
 
 class Config:
-    def __init__(self,refresh_cookies=True, refresh_proxies=True):
-        self.proxies_path = None
-        self.cookies_path = None
+    def __init__(self, proxies_path=None, cookies_path=None, proxy_type=None,
+                 refresh_cookies=True, refresh_proxies=True):
         self.first_row = None
         self.second_row = None
-        self.proxy_type = "http"
-        self.proxy_types = ("http", "https", "socks5", "ssh")
+        self.load_rows_from_config_json()
 
         self.sorting_type = "ctime"
-        # Не используется сейчас
-        # Нужно предоставлять пользователю выбор между одной из сортировок
         self.sorting_types = ("ctime", "mtime", "name", "num")
         self.sorting_descriptions = {"ctime": "Сортировка по дате создания файла cookie",
                                      "mtime": "Сортировка по дате изменения файла cookie",
                                      "name": "Сортировка по имени файла cookie",
                                      "num": "Сортировка по имени файла cookie, если имя профиля представляет число"}
         self.reversed_sorting = False
-
-        self.load_proxies_path_from_config_json()
-        self.load_cookies_path_from_config_json()
-        self.load_rows_from_config_json()
         self.load_sorting_type_from_config_json()
 
-        if refresh_cookies:
-            self.refresh_cookies_path()
+        self.proxies_path = None
+        if proxies_path is not None:
+            self.change_proxies_path(proxies_path)
+        else:
+            self.load_proxies_path_from_config_json()
+            if refresh_proxies:
+                self.refresh_proxies_path()
 
-        if refresh_proxies:
-            self.refresh_proxies_path()
+        self.cookies_path = None
+        if cookies_path is not None:
+            self.change_cookies_path(cookies_path)
+        else:
+            self.load_cookies_path_from_config_json()
+            if refresh_cookies:
+                self.refresh_cookies_path()
+
+        self.proxy_type = "http"
+        self.proxy_types = ("http", "https", "socks5", "ssh")
+        if proxy_type is not None:
+            self.change_proxy_type(proxy_type)
+        else:
+            self.load_proxy_type_from_config_json()
 
     def load_proxies_path_from_config_json(self) -> bool:
         with open("config.json", "r") as file:

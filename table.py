@@ -7,15 +7,19 @@ import json
 
 
 class Table(Config):
-    def __init__(self, refresh_sorting_type=True, **kwargs):
+    def __init__(self, sorting_type=None, refresh_sorting_type=True, **kwargs):
         super().__init__(**kwargs)
         self.book = openpyxl.Workbook()
         self.sheet = self.book.active
         self.sheet.append(self.first_row)
         self.sheet.append(self.second_row)
 
-        if refresh_sorting_type:
-            self.refresh_sorting_type()
+        if sorting_type is not None:
+            self.change_sorting_type(sorting_type)
+        else:
+            self.load_sorting_type_from_config_json()
+            if refresh_sorting_type:
+                self.refresh_sorting_type()
 
     def show_preview(self):
         table = PrettyTable(self.first_row)
@@ -72,6 +76,7 @@ class Table(Config):
             self.sheet.append(data)
 
     def save(self):
+        self.show_preview()
         try:
             table_name = f"Dolphin_profiles_{datetime.now().date()}.xlsx"
             self.book.save(table_name)
